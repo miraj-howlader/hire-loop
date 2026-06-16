@@ -16,7 +16,7 @@ import {
 
 import { Check, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { FaGoogle } from 'react-icons/fa'
@@ -24,6 +24,8 @@ import { FaGoogle } from 'react-icons/fa'
 const SignIn = () => {
   const [loading, setLoading] = useState(false)
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get('redirect') || '/'
    
     const [email,setEmail]=useState('')
     const [password,setPassword]=useState('')
@@ -52,7 +54,7 @@ const SignIn = () => {
 
     if (data) {
       toast.success('Login successfully')
-      router.push('/')
+      router.push(redirectTo)
     }
   } catch (err) {
     console.error(err)
@@ -136,7 +138,7 @@ const SignIn = () => {
     
               <p className="text-center text-sm text-gray-400">
                 Don't have an account?{' '}
-                <Link href="/signup" className="text-violet-400 hover:text-violet-300">
+                <Link href={`/signup?redirect=${redirectTo}`} className="text-violet-400 hover:text-violet-300">
                   Sign Up
                 </Link>
               </p>

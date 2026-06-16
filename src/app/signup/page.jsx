@@ -10,12 +10,14 @@ import {
   Form,
   Input,
   Label,
+  Radio,
+  RadioGroup,
   TextField,
 } from '@heroui/react'
 
 import { Check, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { FaGoogle } from 'react-icons/fa'
@@ -27,16 +29,22 @@ const SignUp = () => {
   const [email,setEmail]=useState('')
   const [password,setPassword]=useState('')
   const [image,setImage]=useState('')
+  const [role,setRole]=useState('seeker')
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get("redirect") || "/"
 
   const handleSignup = async (e) => {
   e.preventDefault()
   setLoading(true)
+  const plan = role ==='seeker' ? "seeker_free":"recruiter_free"
 
   try {
     const { data, error } = await authClient.signUp.email({
       name,
       email,
       password,
+      role,
+      plan,
       image,
     })
 
@@ -52,7 +60,7 @@ const SignUp = () => {
 
     if (data) {
       toast.success('Signup successfully')
-      router.push('/signin')
+      router.push(redirectTo)
     }
   } catch (err) {
     console.error(err)
@@ -108,6 +116,32 @@ const SignUp = () => {
             <FieldError />
           </TextField>
 
+           <div className="flex flex-col gap-4">
+      <Label>Subscription plan</Label>
+      <RadioGroup defaultValue="seeker" name="role" orientation="horizontal"
+      onChange={value=>setRole(value)}>
+        <Radio  value="seeker">
+          <Radio.Control>
+            <Radio.Indicator />
+          </Radio.Control>
+          <Radio.Content>
+            <Label>Job Seeker</Label>
+          
+          </Radio.Content>
+        </Radio>
+        
+        <Radio value="recruiter">
+          <Radio.Control>
+            <Radio.Indicator />
+          </Radio.Control>
+          <Radio.Content>
+            <Label>Recruiter</Label>
+          
+          </Radio.Content>
+        </Radio>
+      </RadioGroup>
+    </div>
+
           <TextField isRequired  name="image" type="url">
             <Label className="text-gray-300">Image</Label>
             <Input placeholder="image url" className="h-12" 
@@ -148,7 +182,7 @@ const SignUp = () => {
 
           <p className="text-center text-sm text-gray-400">
             Already have an account?{' '}
-            <Link href="/signin" className="text-violet-400 hover:text-violet-300">
+            <Link href={`/signin?redirect=${redirectTo}`} className="text-violet-400 hover:text-violet-300">
               Sign In
             </Link>
           </p>

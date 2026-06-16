@@ -6,15 +6,17 @@ import { useState, useEffect } from 'react'
 import { Menu, X, Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@heroui/react'
-import { authClient } from '@/lib/auth-client'
+import { Avatar, Button } from '@heroui/react'
+import { signOut, useSession } from '@/lib/auth-client'
+
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  const { data: session } = authClient.useSession()
+  const { data: session } = useSession()
   const user = session?.user
+ 
 
   const { theme, setTheme } = useTheme()
 
@@ -29,14 +31,30 @@ export default function Navbar() {
   }
 
   const handleLogout = async () => {
-    await authClient.signOut()
+    await signOut()
   }
 
-  const navLinks = [
-    { name: 'Browse Jobs', href: '/browse-jobs' },
-    { name: 'Company', href: '/company' },
-    { name: 'Pricing', href: '/pricing' },
-  ]
+  const dashboardLinks = {
+  seeker: '/dashboard/seeker',
+  recruiter: '/dashboard/recruiter',
+  admin: '/dashboard/admin',
+}
+
+const baseNavLinks = [
+  { name: 'Browse Jobs', href: '/jobs' },
+  { name: 'Company', href: '/company' },
+  { name: 'Pricing', href: '/plans' },
+]
+
+const navLinks = user
+  ? [
+      ...baseNavLinks,
+      {
+        name: 'Dashboard',
+        href: dashboardLinks[user?.role || 'seeker'],
+      },
+    ]
+  : baseNavLinks
 
   return (
     <motion.nav
@@ -78,7 +96,13 @@ export default function Navbar() {
 
           {user ? (
             <>
-              Hi {user.name}
+             <Avatar size="sm">
+        <Avatar.Image
+          alt="Small Avatar"
+          src={user.image}
+        />
+        <Avatar.Fallback>{user.name.charAt(0)}</Avatar.Fallback>
+      </Avatar>
 
               <Button
                 color="danger"
